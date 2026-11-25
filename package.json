@@ -1,0 +1,25 @@
+{
+  "name": "koji-devis-gratuit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Générateur de devis gratuit par IA (projet autonome, séparé de koji-web)",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "node --test \"tests/**/*.test.js\""
+  },
+  "engines": {
+    "node": ">=20.9"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "1.14.0",
+    "@supabase/supabase-js": "2.119.2",
+    "next": "16.4.6",
+    "nodemailer": "10.6.1",
+    "pdf-lib": "1.17.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  }
+}
