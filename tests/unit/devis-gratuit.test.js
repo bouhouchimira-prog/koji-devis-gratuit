@@ -1,11 +1,11 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { computeTotals, round2, formatEuro } from "../lib/devis-gratuit/calc.js";
-import { emptyDraft, applyAction, sanitizeDraft, MAX_LINES } from "../lib/devis-gratuit/draft.js";
-import { searchOuvrages } from "../lib/devis-gratuit/resolve.js";
-import { runTool } from "../lib/devis-gratuit/tools.js";
-import { validateDetails } from "../lib/devis-gratuit/leads.js";
-import { buildQuotePdf } from "../lib/devis-gratuit/pdf.js";
+import { computeTotals, round2, formatEuro } from "../../lib/devis-gratuit/calc.js";
+import { emptyDraft, applyAction, sanitizeDraft, MAX_LINES } from "../../lib/devis-gratuit/draft.js";
+import { searchOuvrages } from "../../lib/devis-gratuit/resolve.js";
+import { runTool } from "../../lib/devis-gratuit/tools.js";
+import { validateDetails } from "../../lib/devis-gratuit/leads.js";
+import { buildQuotePdf } from "../../lib/devis-gratuit/pdf.js";
 
 // Fait tourner une suite d'appels d'outils, comme le ferait l'IA.
 function play(calls, start = emptyDraft()) {
@@ -139,7 +139,7 @@ test("PDF : se génère, avec accents et caractères hors WinAnsi", async () => 
 });
 
 test("historique du chat : rôles alternés, commence et finit par l'artisan", async () => {
-  const { validateHistory } = await import("../lib/devis-gratuit/chat.js");
+  const { validateHistory } = await import("../../lib/devis-gratuit/chat.js");
   assert.equal(validateHistory([{ role: "user", content: " WC " }])[0].content, "WC");
   assert.throws(() => validateHistory([]), /vide/);
   assert.throws(() => validateHistory([{ role: "assistant", content: "x" }]), /illisible/);

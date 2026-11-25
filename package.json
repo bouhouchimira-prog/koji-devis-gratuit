@@ -8,10 +8,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node --test \"tests/**/*.test.js\""
+    "lint": "eslint . --max-warnings=0",
+    "test": "npm run test:unit",
+    "test:unit": "node --test \"tests/unit/**/*.test.js\"",
+    "test:integration": "node --test --test-concurrency=1 \"tests/integration/**/*.test.js\"",
+    "ci": "npm run lint && npm run test:unit && npm run build && npm run test:integration"
   },
   "engines": {
-    "node": ">=20.9"
+    "node": "^22.13.0 || >=24"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "1.14.0",
@@ -21,5 +25,12 @@
     "pdf-lib": "1.17.1",
     "react": "19.3.1",
     "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "eslint": "10.15.0",
+    "eslint-config-next": "16.4.6"
+  },
+  "overrides": {
+    "eslint": "$eslint"
   }
 }

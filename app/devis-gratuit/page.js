@@ -46,7 +46,7 @@ export default function DevisGratuitLanding() {
         <p className="dg-eyebrow">Pour les artisans du bâtiment</p>
         <h1>Un devis professionnel en 5 minutes, sans rien installer.</h1>
         <p className="dg-lead">
-          Décrivez les travaux à l'assistant Koji. Il prépare les lignes, calcule les totaux avec votre taux horaire, et
+          Décrivez les travaux à l’assistant Koji. Il prépare les lignes, calcule les totaux avec votre taux horaire, et
           vous donne un PDF prêt à envoyer à votre client.
         </p>
         <div className="dg-hero-actions">
@@ -81,7 +81,7 @@ export default function DevisGratuitLanding() {
       </section>
 
       <section className="dg-cta-band">
-        <h2>Votre prochain devis peut partir aujourd'hui.</h2>
+        <h2>Votre prochain devis peut partir aujourd’hui.</h2>
         <Link href="/devis-gratuit/creer" className="dg-btn dg-btn-primary dg-btn-lg">
           Créer mon devis
         </Link>

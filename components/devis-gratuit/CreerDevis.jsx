@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { emptyDraft, applyAction, sanitizeDraft } from "@/lib/devis-gratuit/draft.js";
 import { computeTotals } from "@/lib/devis-gratuit/calc.js";
 import Chat from "./Chat.jsx";
@@ -51,28 +51,36 @@ export function clearSaved() {
   } catch {}
 }
 
+function visitSource() {
+  const params = new URLSearchParams(window.location.search);
+  return (params.get("utm_source") || document.referrer || "direct").slice(0, 200);
+}
+
+const subscribeNothing = () => () => {};
+
+/**
+ * Le devis en cours vit dans le navigateur (localStorage) : l'écran n'est
+ * rendu que côté client, ce qui permet de le relire dès le premier rendu.
+ */
 export default function CreerDevis() {
-  const [draft, setDraft] = useState(emptyDraft);
-  const [messages, setMessages] = useState([GREETING]);
-  const [loaded, setLoaded] = useState(false);
+  const isClient = useSyncExternalStore(subscribeNothing, () => true, () => false);
+  if (!isClient) return <main className="dg-app" aria-busy="true" />;
+  return <CreerDevisApp />;
+}
+
+function CreerDevisApp() {
+  const [saved] = useState(loadSaved);
+  const [draft, setDraft] = useState(() => saved?.draft ?? emptyDraft());
+  const [messages, setMessages] = useState(() => [GREETING, ...(saved?.messages ?? [])]);
   const [session, setSession] = useState({ status: "loading", remaining: null, error: null });
   const [streaming, setStreaming] = useState(false);
   const [step, setStep] = useState("chat"); // chat | finaliser
   const [tab, setTab] = useState("chat"); // onglet affiché sur téléphone
   const [flash, setFlash] = useState(false);
-  const sourceRef = useRef("direct");
+  const [source] = useState(visitSource);
 
-  // Reprend un devis en cours et ouvre la session.
+  // Ouvre la session de chat (ou reprend celle du cookie).
   useEffect(() => {
-    const saved = loadSaved();
-    if (saved) {
-      setDraft(saved.draft);
-      if (saved.messages.length) setMessages([GREETING, ...saved.messages]);
-    }
-    const params = new URLSearchParams(window.location.search);
-    sourceRef.current = (params.get("utm_source") || document.referrer || "direct").slice(0, 200);
-    setLoaded(true);
-
     fetch("/api/devis-gratuit/session", { method: "POST" })
       .then(async (res) => {
         const data = await res.json().catch(() => ({}));
@@ -83,8 +91,8 @@ export default function CreerDevis() {
   }, []);
 
   useEffect(() => {
-    if (loaded) save(draft, messages.filter((m) => !m.local && !m.pending));
-  }, [draft, messages, loaded]);
+    save(draft, messages.filter((m) => !m.local && !m.pending));
+  }, [draft, messages]);
 
   const send = useCallback(
     async (text) => {
@@ -182,7 +190,7 @@ export default function CreerDevis() {
   if (session.status === "error") {
     return (
       <main className="dg-blocked">
-        <h1>Le devis gratuit n'est pas disponible</h1>
+        <h1>Le devis gratuit n’est pas disponible</h1>
         <p>{session.error}</p>
         <a className="dg-btn dg-btn-primary" href={KOJI_PRO_URL}>
           Découvrir Koji Pro
@@ -214,7 +222,7 @@ export default function CreerDevis() {
             onFinalise={() => setStep("finaliser")}
           />
         ) : (
-          <LeadForm draft={draft} source={sourceRef.current} onBack={() => setStep("chat")} onDone={clearSaved} />
+          <LeadForm draft={draft} source={source} onBack={() => setStep("chat")} onDone={clearSaved} />
         )}
       </section>
 

@@ -11,9 +11,24 @@ Projet **autonome**, séparé de `koji-web` : il n'importe rien du dépôt princ
 npm install
 cp .env.example .env.local   # puis remplir
 npm run dev                  # http://localhost:3000/devis-gratuit
-npm test                     # tests unitaires (node --test)
-npm run build
 ```
+
+## Qualité et CI
+
+| Commande | Ce qu'elle vérifie |
+|---|---|
+| `npm run lint` | ESLint (règles Next.js, React, hooks), zéro avertissement toléré |
+| `npm run test:unit` | `tests/unit/` : calculs, brouillon, recherche de prix, outils de l'IA, validation, PDF |
+| `npm run build` | Build de production Next.js |
+| `npm run test:integration` | `tests/integration/` : démarre l'app construite (`next start`) et appelle les vraies routes HTTP — parcours complet jusqu'au PDF, un devis par email, quotas, refus, interrupteur coupé. Nécessite `npm run build` avant |
+| `npm run ci` | Tout ce qui précède, dans l'ordre |
+
+Les tests d'intégration tournent en mode démo avec un stockage temporaire : ni clé Claude, ni Supabase, ni SMTP.
+
+Le pipeline GitHub Actions est dans [`.github/workflows/ci.yml`](.github/workflows/ci.yml). Il tourne à chaque
+push sur `main` et sur chaque pull request, en quatre jobs parallèles : **lint**, **tests unitaires**
+(Node 22 et 24), **build + tests d'intégration**, et **audit** des dépendances de production
+(échec sur une vulnérabilité élevée ou critique).
 
 Sans clé Claude, mettez `DEVIS_GRATUIT_DEMO=true` : un assistant hors ligne simple remplace Claude
 pour tester tout le parcours. Pour le vrai chat : `DEVIS_GRATUIT_DEMO=false` et `ANTHROPIC_API_KEY`.
@@ -46,7 +61,8 @@ pour tester tout le parcours. Pour le vrai chat : `DEVIS_GRATUIT_DEMO=false` et 
 | `components/devis-gratuit/` | `CreerDevis`, `Chat`, `QuotePreview`, `LeadForm` |
 | `lib/devis-gratuit/` | Logique : calculs, brouillon, bibliothèque, outils de l'IA, prompt, quotas, stockage, PDF, email |
 | `supabase/migrations/` | Tables `devis_gratuit_leads` et `devis_gratuit_sessions`, RLS activé |
-| `tests/` | Tests unitaires |
+| `tests/unit/`, `tests/integration/` | Tests unitaires et d'intégration |
+| `.github/workflows/ci.yml` | Pipeline CI |
 
 ## Avant la mise en ligne
 

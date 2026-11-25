@@ -6,12 +6,14 @@ import { validateDetails, CONSENT_TEXT } from "@/lib/devis-gratuit/leads.js";
 
 const KOJI_PRO_URL = process.env.NEXT_PUBLIC_KOJI_PRO_URL || "https://getkoji.io";
 
+const fieldId = (name) => `dg-${name.replace(".", "-")}`;
+
 function Field({ name, label, errors, children, hint }) {
-  const id = `dg-${name.replace(".", "-")}`;
+  const id = fieldId(name);
   return (
     <div className={`dg-field ${errors[name] ? "has-error" : ""}`}>
       <label htmlFor={id}>{label}</label>
-      {children(id)}
+      {children}
       {hint && !errors[name] && <p className="dg-field-hint">{hint}</p>}
       {errors[name] && (
         <p className="dg-field-error" id={`${id}-error`}>
@@ -41,27 +43,20 @@ export default function LeadForm({ draft, source, onBack, onDone }) {
       return { ...f, [group]: { ...f[group], [key]: value } };
     });
   const get = (path) => (path.includes(".") ? form[path.split(".")[0]][path.split(".")[1]] : form[path]);
-  const input = (path, props = {}) => (id) => (
-    <input
-      id={id}
-      value={get(path)}
-      onChange={(e) => set(path, e.target.value)}
-      aria-invalid={Boolean(errors[path])}
-      aria-describedby={errors[path] ? `${id}-error` : undefined}
-      {...props}
-    />
-  );
-  const area = (path, props = {}) => (id) => (
-    <textarea
-      id={id}
-      rows={2}
-      value={get(path)}
-      onChange={(e) => set(path, e.target.value)}
-      aria-invalid={Boolean(errors[path])}
-      aria-describedby={errors[path] ? `${id}-error` : undefined}
-      {...props}
-    />
-  );
+  // Attributs communs d'un champ : valeur, saisie, état d'erreur lié au message.
+  const bind = (path) => ({
+    id: fieldId(path),
+    value: get(path),
+    onChange: (e) => set(path, e.target.value),
+    "aria-invalid": Boolean(errors[path]),
+    "aria-describedby": errors[path] ? `${fieldId(path)}-error` : undefined,
+  });
+  function input(path, props = {}) {
+    return <input {...bind(path)} {...props} />;
+  }
+  function area(path, props = {}) {
+    return <textarea rows={2} {...bind(path)} {...props} />;
+  }
 
   const submit = async (e) => {
     e.preventDefault();

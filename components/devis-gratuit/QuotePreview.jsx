@@ -1,21 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { computeTotals, lineTotal, formatEuro, formatNumber, VAT_RATES, VAT_LABELS, FRANCHISE_MENTION } from "@/lib/devis-gratuit/calc.js";
 import { MAX_LINES } from "@/lib/devis-gratuit/draft.js";
 
+const numberText = (value) => (value === null || value === undefined ? "" : formatNumber(value).replace(/\s/g, ""));
+
+/**
+ * Texte local d'un champ, recalé sur la valeur du brouillon quand elle change
+ * (par l'IA par exemple). Le recalage se fait pendant le rendu, sans effet.
+ */
+function useSyncedText(value, toText) {
+  const [text, setText] = useState(() => toText(value));
+  const [synced, setSynced] = useState(value);
+  if (value !== synced) {
+    setSynced(value);
+    setText(toText(value));
+  }
+  return [text, setText];
+}
+
 /** Champ numérique tolérant la virgule, validé à la sortie du champ. */
 function NumberField({ value, onCommit, placeholder, label, className, disabled }) {
-  const [text, setText] = useState(value === null || value === undefined ? "" : formatNumber(value).replace(/\s/g, ""));
-  useEffect(() => {
-    setText(value === null || value === undefined ? "" : formatNumber(value).replace(/\s/g, ""));
-  }, [value]);
+  const [text, setText] = useSyncedText(value, numberText);
   const commit = () => {
     const trimmed = text.trim();
     if (trimmed === "") return onCommit(null);
     const n = Number(trimmed.replace(/\s/g, "").replace(",", "."));
     if (Number.isFinite(n) && n >= 0) onCommit(n);
-    else setText(value === null || value === undefined ? "" : formatNumber(value).replace(/\s/g, ""));
+    else setText(numberText(value));
   };
   return (
     <input
@@ -34,8 +47,7 @@ function NumberField({ value, onCommit, placeholder, label, className, disabled 
 }
 
 function TextField({ value, onCommit, label, className, placeholder, disabled }) {
-  const [text, setText] = useState(value ?? "");
-  useEffect(() => setText(value ?? ""), [value]);
+  const [text, setText] = useSyncedText(value, (v) => v ?? "");
   return (
     <input
       type="text"
